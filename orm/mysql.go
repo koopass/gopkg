@@ -1,0 +1,106 @@
+package orm
+
+import (
+	"context"
+	"fmt"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
+
+type Entity interface {
+	ID() int64
+	Map() map[string]interface{}
+}
+
+type EasyCRUD[T Entity] interface {
+	Select(ctx context.Context, query interface{}, args ...interface{}) (T, error)
+	Selects(ctx context.Context, query interface{}, args ...interface{}) ([]T, error)
+	Insert(ctx context.Context, entity T, cols []string) (int64, error)
+	Update(ctx context.Context, entity T, cols []string) (int64, error)
+	Delete(ctx context.Context, id int64) error
+}
+
+func NewEasyGORM[T Entity](db *gorm.DB) EasyCRUD[T] {
+	return &EasyGORM[T]{
+		db: db,
+	}
+}
+
+type EasyGORM[T Entity] struct {
+	db *gorm.DB
+}
+
+func (e *EasyGORM[T]) Select(ctx context.Context, query interface{}, args ...interface{}) (row T, err error) {
+	var rows []T
+	err = e.db.Where(query, args...).Limit(1).Find(&rows).Error
+	if err != nil {
+		return row, err
+	}
+	if len(rows) == 0 {
+		return row, nil
+	}
+	return rows[0], nil
+}
+
+func (e *EasyGORM[T]) Selects(ctx context.Context, query interface{}, args ...interface{}) ([]T, error) {
+	var rows []T
+	err := e.db.Where(query, args...).Find(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	return rows, nil
+}
+
+func (e *EasyGORM[T]) Insert(ctx context.Context, entity T, cols []string) (int64, error) {
+	if len(cols) == 0 {
+		err := e.db.Create(entity).Error
+		return entity.ID(), err
+	}
+	err := e.db.Select(cols).Create(entity).Error
+	return entity.ID(), err
+}
+
+func (e *EasyGORM[T]) Update(ctx context.Context, entity T, cols []string) (int64, error) {
+	if len(cols) == 0 {
+		return 0, nil
+	}
+	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.ID()).Updates(entity)
+	return result.RowsAffected, result.Error
+}
+
+func (e *EasyGORM[T]) Delete(ctx context.Context, id int64) error {
+	row := new(T)
+	return e.db.Delete(row, id).Error
+}
+
+type MySQLConfig struct {
+	Name     string
+	Port     int
+	Host     string
+	Username string
+	Password string
+	Charset  string
+	PoolSize int
+}
+
+func (c *MySQLConfig) buildDSN() string {
+	return fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=%s&parseTime=True&loc=Local", c.Username, c.Password, c.Host, c.Port, c.Name, c.Charset)
+}
+
+func NewMySQL(c *MySQLConfig) (*gorm.DB, error) {
+	db, err := gorm.Open(mysql.Open(c.buildDSN()))
+	if err != nil {
+		return nil, err
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+	sqlDB.SetMaxIdleConns(c.PoolSize)
+	sqlDB.SetMaxOpenConns(c.PoolSize)
+	return db, nil
+}
