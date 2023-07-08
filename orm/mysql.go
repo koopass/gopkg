@@ -14,11 +14,11 @@ type Entity interface {
 }
 
 type EasyCRUD[T Entity] interface {
-	Select(ctx context.Context, query interface{}, args ...interface{}) (T, error)
-	Selects(ctx context.Context, query interface{}, args ...interface{}) ([]T, error)
-	Insert(ctx context.Context, entity T, cols []string) (int64, error)
-	Update(ctx context.Context, entity T, cols []string) (int64, error)
-	Delete(ctx context.Context, id int64) error
+	SelectOne(ctx context.Context, query interface{}, args ...interface{}) (T, error)
+	Select(ctx context.Context, query interface{}, args ...interface{}) ([]T, error)
+	InsertOne(ctx context.Context, entity T, cols []string) (int64, error)
+	UpdateOne(ctx context.Context, entity T, cols []string) (int64, error)
+	DeleteOne(ctx context.Context, id int64) error
 }
 
 func NewEasyGORM[T Entity](db *gorm.DB) EasyCRUD[T] {
@@ -31,7 +31,7 @@ type EasyGORM[T Entity] struct {
 	db *gorm.DB
 }
 
-func (e *EasyGORM[T]) Select(ctx context.Context, query interface{}, args ...interface{}) (row T, err error) {
+func (e *EasyGORM[T]) SelectOne(ctx context.Context, query interface{}, args ...interface{}) (row T, err error) {
 	var rows []T
 	err = e.db.Where(query, args...).Limit(1).Find(&rows).Error
 	if err != nil {
@@ -43,7 +43,7 @@ func (e *EasyGORM[T]) Select(ctx context.Context, query interface{}, args ...int
 	return rows[0], nil
 }
 
-func (e *EasyGORM[T]) Selects(ctx context.Context, query interface{}, args ...interface{}) ([]T, error) {
+func (e *EasyGORM[T]) Select(ctx context.Context, query interface{}, args ...interface{}) ([]T, error) {
 	var rows []T
 	err := e.db.Where(query, args...).Find(&rows).Error
 	if err != nil {
@@ -55,7 +55,7 @@ func (e *EasyGORM[T]) Selects(ctx context.Context, query interface{}, args ...in
 	return rows, nil
 }
 
-func (e *EasyGORM[T]) Insert(ctx context.Context, entity T, cols []string) (int64, error) {
+func (e *EasyGORM[T]) InsertOne(ctx context.Context, entity T, cols []string) (int64, error) {
 	if len(cols) == 0 {
 		err := e.db.Create(entity).Error
 		return entity.ID(), err
@@ -64,7 +64,7 @@ func (e *EasyGORM[T]) Insert(ctx context.Context, entity T, cols []string) (int6
 	return entity.ID(), err
 }
 
-func (e *EasyGORM[T]) Update(ctx context.Context, entity T, cols []string) (int64, error) {
+func (e *EasyGORM[T]) UpdateOne(ctx context.Context, entity T, cols []string) (int64, error) {
 	if len(cols) == 0 {
 		return 0, nil
 	}
@@ -72,7 +72,7 @@ func (e *EasyGORM[T]) Update(ctx context.Context, entity T, cols []string) (int6
 	return result.RowsAffected, result.Error
 }
 
-func (e *EasyGORM[T]) Delete(ctx context.Context, id int64) error {
+func (e *EasyGORM[T]) DeleteOne(ctx context.Context, id int64) error {
 	row := new(T)
 	return e.db.Delete(row, id).Error
 }
