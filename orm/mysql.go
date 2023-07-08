@@ -10,7 +10,7 @@ import (
 
 type Entity interface {
 	ID() int64
-	Map() map[string]interface{}
+	Kv() map[string]interface{}
 }
 
 type EasyCRUD[T Entity] interface {
@@ -68,7 +68,7 @@ func (e *EasyGORM[T]) UpdateOne(ctx context.Context, entity T, cols []string) (i
 	if len(cols) == 0 {
 		return 0, nil
 	}
-	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.ID()).Updates(entity)
+	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.ID()).Updates(entity.Kv())
 	return result.RowsAffected, result.Error
 }
 
