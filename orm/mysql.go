@@ -78,7 +78,7 @@ func (e *EasyGORM[T]) DeleteOne(ctx context.Context, id int64) error {
 }
 
 type MySQLConfig struct {
-	Name     string
+	DBName   string
 	Port     int
 	Host     string
 	Username string
@@ -88,7 +88,7 @@ type MySQLConfig struct {
 }
 
 func (c *MySQLConfig) buildDSN() string {
-	return fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=%s&parseTime=True&loc=Local", c.Username, c.Password, c.Host, c.Port, c.Name, c.Charset)
+	return fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=%s&parseTime=True&loc=Local", c.Username, c.Password, c.Host, c.Port, c.DBName, c.Charset)
 }
 
 func NewMySQL(c *MySQLConfig) (*gorm.DB, error) {
