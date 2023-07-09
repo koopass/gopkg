@@ -9,8 +9,8 @@ import (
 )
 
 type Entity interface {
-	ID() int64
-	Kv() map[string]interface{}
+	GetID() int64
+	GetKV() map[string]interface{}
 }
 
 type EasyCRUD[T Entity] interface {
@@ -58,17 +58,17 @@ func (e *EasyGORM[T]) Select(ctx context.Context, query interface{}, args ...int
 func (e *EasyGORM[T]) InsertOne(ctx context.Context, entity T, cols []string) (int64, error) {
 	if len(cols) == 0 {
 		err := e.db.Create(entity).Error
-		return entity.ID(), err
+		return entity.GetID(), err
 	}
 	err := e.db.Select(cols).Create(entity).Error
-	return entity.ID(), err
+	return entity.GetID(), err
 }
 
 func (e *EasyGORM[T]) UpdateOne(ctx context.Context, entity T, cols []string) (int64, error) {
 	if len(cols) == 0 {
 		return 0, nil
 	}
-	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.ID()).Updates(entity.Kv())
+	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.GetID()).Updates(entity.GetKV())
 	return result.RowsAffected, result.Error
 }
 
