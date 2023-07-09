@@ -70,50 +70,50 @@ func CtxPanicw(ctx context.Context, template string, args ...interface{}) {
 	defaultLogger.Panicw(template, args...)
 }
 
-func Debugf(ctx context.Context, template string, args ...interface{}) {
+func Debugf(template string, args ...interface{}) {
 	defaultLogger.Debugf(template, args...)
 }
 
-func Infof(ctx context.Context, template string, args ...interface{}) {
+func Infof(template string, args ...interface{}) {
 	defaultLogger.Infof(template, args...)
 }
 
-func Warnf(ctx context.Context, template string, args ...interface{}) {
+func Warnf(template string, args ...interface{}) {
 	defaultLogger.Warnf(template, args...)
 }
 
-func Errorf(ctx context.Context, template string, args ...interface{}) {
+func Errorf(template string, args ...interface{}) {
 	defaultLogger.Errorf(template, args...)
 }
 
-func Fatalf(ctx context.Context, template string, args ...interface{}) {
+func Fatalf(template string, args ...interface{}) {
 	defaultLogger.Fatalf(template, args...)
 }
 
-func Panicf(ctx context.Context, template string, args ...interface{}) {
+func Panicf(template string, args ...interface{}) {
 	defaultLogger.Panicf(template, args...)
 }
 
-func Debugw(ctx context.Context, template string, args ...interface{}) {
+func Debugw(template string, args ...interface{}) {
 	defaultLogger.Debugw(template, args...)
 }
 
-func Infow(ctx context.Context, template string, args ...interface{}) {
+func Infow(template string, args ...interface{}) {
 	defaultLogger.Infow(template, args...)
 }
 
-func Warnw(ctx context.Context, template string, args ...interface{}) {
+func Warnw(template string, args ...interface{}) {
 	defaultLogger.Warnw(template, args...)
 }
 
-func Errorw(ctx context.Context, template string, args ...interface{}) {
+func Errorw(template string, args ...interface{}) {
 	defaultLogger.Errorw(template, args...)
 }
 
-func Fatalw(ctx context.Context, template string, args ...interface{}) {
+func Fatalw(template string, args ...interface{}) {
 	defaultLogger.Fatalw(template, args...)
 }
 
-func Panicw(ctx context.Context, template string, args ...interface{}) {
+func Panicw(template string, args ...interface{}) {
 	defaultLogger.Panicw(template, args...)
 }
