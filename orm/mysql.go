@@ -78,13 +78,13 @@ func (e *EasyGORM[T]) DeleteOne(ctx context.Context, id int64) error {
 }
 
 type MySQLConfig struct {
-	DBName   string
-	Port     int
-	Host     string
-	Username string
-	Password string
-	Charset  string
-	PoolSize int
+	DBName   string `json:"db_name"`
+	Port     int    `json:"port"`
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Charset  string `json:"charset"`
+	PoolSize int    `json:"pool_size"`
 }
 
 func (c *MySQLConfig) buildDSN() string {
