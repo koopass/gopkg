@@ -16,6 +16,7 @@ type Entity interface {
 type EasyCRUD[T Entity] interface {
 	SelectOne(ctx context.Context, query interface{}, args ...interface{}) (T, error)
 	Select(ctx context.Context, query interface{}, args ...interface{}) ([]T, error)
+	SelectLimit(ctx context.Context, limit int, query interface{}, args ...interface{}) ([]T, error)
 	InsertOne(ctx context.Context, entity T, cols []string) (int64, error)
 	UpdateOne(ctx context.Context, entity T, cols []string) (int64, error)
 	DeleteOne(ctx context.Context, id int64) error
@@ -29,6 +30,18 @@ func NewEasyGORM[T Entity](db *gorm.DB) EasyCRUD[T] {
 
 type EasyGORM[T Entity] struct {
 	db *gorm.DB
+}
+
+func (e *EasyGORM[T]) SelectLimit(ctx context.Context, limit int, query interface{}, args ...interface{}) ([]T, error) {
+	var rows []T
+	err := e.db.Where(query, args...).Limit(limit).Find(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	return rows, nil
 }
 
 func (e *EasyGORM[T]) SelectOne(ctx context.Context, query interface{}, args ...interface{}) (row T, err error) {
