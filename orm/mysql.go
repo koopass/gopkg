@@ -68,7 +68,7 @@ func (e *EasyGORM[T]) UpdateOne(ctx context.Context, entity T, cols []string) (i
 	if len(cols) == 0 {
 		return 0, nil
 	}
-	result := e.db.Model(entity).Select(cols).Where("id = ?", entity.GetID()).Updates(entity.GetKV())
+	result := e.db.Model(entity).Select(cols).Updates(entity.GetKV())
 	return result.RowsAffected, result.Error
 }
 
