@@ -9,7 +9,7 @@ import (
 var defaultLogger *zap.SugaredLogger
 
 func init() {
-	logger, _ := zap.NewProduction()
+	logger, _ := zap.NewProduction(zap.AddCallerSkip(1))
 	defaultLogger = logger.Sugar()
 }
 
