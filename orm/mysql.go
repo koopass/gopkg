@@ -17,10 +17,11 @@ type EasyCRUD[T Entity] interface {
 	SelectOne(ctx context.Context, query interface{}, args ...interface{}) (T, error)
 	Select(ctx context.Context, query interface{}, args ...interface{}) ([]T, error)
 	SelectLimit(ctx context.Context, limit int, query interface{}, args ...interface{}) ([]T, error)
-	SelectPage(ctx context.Context, offset, limit int, query interface{}, args ...interface{}) ([]T, error)
+	SelectPage(ctx context.Context, offset, limit int, order, query interface{}, args ...interface{}) ([]T, error)
 	InsertOne(ctx context.Context, entity T, cols []string) (int64, error)
 	UpdateOne(ctx context.Context, entity T, cols []string) (int64, error)
 	DeleteOne(ctx context.Context, id int64) error
+	Scan(ctx context.Context, limit int, fn func(ctx context.Context, entity T)) error
 }
 
 func NewEasyGORM[T Entity](db *gorm.DB) EasyCRUD[T] {
@@ -31,6 +32,24 @@ func NewEasyGORM[T Entity](db *gorm.DB) EasyCRUD[T] {
 
 type EasyGORM[T Entity] struct {
 	db *gorm.DB
+}
+
+func (e *EasyGORM[T]) Scan(ctx context.Context, limit int, fn func(ctx context.Context, entity T)) error {
+	startID := int64(0)
+
+	for {
+		rows, err := e.SelectLimit(ctx, limit, "id > ?", startID)
+		if err != nil {
+			return err
+		}
+		for _, row := range rows {
+			fn(ctx, row)
+		}
+		if len(rows) == 0 {
+			return nil
+		}
+		startID = rows[len(rows)-1].GetID()
+	}
 }
 
 func (e *EasyGORM[T]) SelectLimit(ctx context.Context, limit int, query interface{}, args ...interface{}) ([]T, error) {
@@ -45,9 +64,9 @@ func (e *EasyGORM[T]) SelectLimit(ctx context.Context, limit int, query interfac
 	return rows, nil
 }
 
-func (e *EasyGORM[T]) SelectPage(ctx context.Context, offset, limit int, query interface{}, args ...interface{}) ([]T, error) {
+func (e *EasyGORM[T]) SelectPage(ctx context.Context, offset, limit int, order, query interface{}, args ...interface{}) ([]T, error) {
 	var rows []T
-	err := e.db.Where(query, args...).Offset(offset).Limit(limit).Find(&rows).Error
+	err := e.db.Where(query, args...).Offset(offset).Limit(limit).Order(order).Find(&rows).Error
 	if err != nil {
 		return nil, err
 	}
